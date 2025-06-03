@@ -108,7 +108,7 @@ const MyOrders = () => {
 
       // 2. Open Razorpay checkout
       const options = {
-        key: process.env.VITE_APP_RAZORPAY_KEY, // Replace with your Razorpay key_id
+        key: import.meta.env.VITE_APP_RAZORPAY_KEY, // Replace with your Razorpay key_id
         amount: data.amount,
         currency: data.currency,
         name: "Agri Marketplace",
