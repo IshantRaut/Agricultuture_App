@@ -14,37 +14,40 @@ const Login = () => {
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_APP_API_URL}/api/auth/login`, // <-- use env variable
+      {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setError("");
-        toast.success("Login successful!");
-        localStorage.setItem("token", data.token);
-        localStorage.setItem("currentUser", JSON.stringify(data.user));
-        login(data.user);
-        setTimeout(() => {
-          if (data.user.role === "Farmer") {
-            navigate("/farmer-dashboard");
-          } else {
-            navigate("/buyer-dashboard");
-          }
-        }, 1000);
-      } else {
-        setError(data.message || "Invalid Email or Password");
-        toast.error(data.message || "Invalid Email or Password");
       }
-    } catch (err) {
-      setError("Server error");
-      toast.error("Server error",err);
+    );
+    const data = await res.json();
+    if (res.ok) {
+      setError("");
+      toast.success("Login successful!");
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("currentUser", JSON.stringify(data.user));
+      login(data.user);
+      setTimeout(() => {
+        if (data.user.role === "Farmer") {
+          navigate("/farmer-dashboard");
+        } else {
+          navigate("/buyer-dashboard");
+        }
+      }, 1000);
+    } else {
+      setError(data.message || "Invalid Email or Password");
+      toast.error(data.message || "Invalid Email or Password");
     }
-  };
+  } catch (err) {
+    setError("Server error");
+    toast.error("Server error", err);
+  }
+};
 
   return (
     <div

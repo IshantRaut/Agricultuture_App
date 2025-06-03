@@ -24,11 +24,14 @@ const Product = () => {
       setError("");
       const token = localStorage.getItem("token");
       try {
-        const res = await fetch("http://localhost:5000/api/products", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_APP_API_URL}/api/products`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
         const data = await res.json();
         if (res.ok) {
           setProducts(data);
@@ -75,14 +78,17 @@ const Product = () => {
     setSuccess("");
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:5000/api/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_APP_API_URL}/api/products`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        }
+      );
       const data = await res.json();
       if (res.ok) {
         setProducts((prev) => [...prev, data]);
@@ -115,12 +121,15 @@ const Product = () => {
     setError("");
     setSuccess("");
     try {
-      const res = await fetch(`http://localhost:5000/api/products/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_APP_API_URL}/api/products/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
       const data = await res.json();
       if (res.ok) {
         setProducts((prev) => prev.filter((p) => p._id !== id));

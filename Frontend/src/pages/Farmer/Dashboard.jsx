@@ -10,16 +10,22 @@ const FarmerDashboard = () => {
       try {
         const token = localStorage.getItem("token");
         // Fetch products
-        const prodRes = await fetch("http://localhost:5000/api/products", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const prodRes = await fetch(
+          `${import.meta.env.VITE_APP_API_URL}/api/products`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
         const prodData = await prodRes.json();
         setProducts(prodData);
 
         // Fetch orders
-        const orderRes = await fetch("http://localhost:5000/api/orders", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const orderRes = await fetch(
+          `${import.meta.env.VITE_APP_API_URL}/api/orders`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
         const orderData = await orderRes.json();
         setOrders(orderData);
       } catch (err) {

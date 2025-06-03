@@ -11,7 +11,9 @@ const MarketPlace = () => {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch("http://localhost:5000/api/products/market");
+        const res = await fetch(
+          `${import.meta.env.VITE_APP_API_URL}/api/products/market`
+        );
         const data = await res.json();
         if (res.ok) {
           setProducts(data);
@@ -31,17 +33,20 @@ const MarketPlace = () => {
   const handleAddToCart = async (product) => {
     const token = localStorage.getItem("token");
     try {
-      const res = await fetch("http://localhost:5000/api/cart/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          productId: product._id,
-          quantity: 1, // or let user choose
-        }),
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_APP_API_URL}/api/cart/add`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            productId: product._id,
+            quantity: 1, // or let user choose
+          }),
+        }
+      );
       if (res.ok) {
         toast.success("Added to cart!");
       } else {

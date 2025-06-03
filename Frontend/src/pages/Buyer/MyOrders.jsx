@@ -12,30 +12,33 @@ const MyOrders = () => {
 
   // Fetch orders from backend cart
   useEffect(() => {
-    const fetchOrders = async () => {
-      setLoading(true);
-      setError("");
-      const token = localStorage.getItem("token");
-      try {
-        const res = await fetch("http://localhost:5000/api/cart", {
+  const fetchOrders = async () => {
+    setLoading(true);
+    setError("");
+    const token = localStorage.getItem("token");
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_APP_API_URL}/api/cart`,
+        {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        });
-        const data = await res.json();
-        if (res.ok) {
-          setOrders(data);
-        } else {
-          setError(data.message || "Failed to fetch orders");
         }
-      } catch (err) {
-        setError("Server error", err.message);
-      } finally {
-        setLoading(false);
+      );
+      const data = await res.json();
+      if (res.ok) {
+        setOrders(data);
+      } else {
+        setError(data.message || "Failed to fetch orders");
       }
-    };
-    fetchOrders();
-  }, []);
+    } catch (err) {
+      setError("Server error", err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+  fetchOrders();
+}, []);
 
   // Countdown for receipt
   useEffect(() => {
@@ -60,65 +63,73 @@ const MyOrders = () => {
 
   // Delete order handler
   const handleDelete = async (productId) => {
-    const token = localStorage.getItem("token");
-    try {
-      const res = await fetch("http://localhost:5000/api/cart/remove", {
+  const token = localStorage.getItem("token");
+  try {
+    const res = await fetch(
+      `${import.meta.env.VITE_APP_API_URL}/api/cart/remove`,
+      {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ productId }),
-      });
-      if (res.ok) {
-        setOrders((prev) =>
-          prev.filter(
-            (order) => (order.product?._id || order.product) !== productId
-          )
-        );
-        toast.success("Order deleted!");
-      } else {
-        toast.error("Failed to delete order");
       }
-    } catch {
-      toast.error("Server error");
+    );
+    if (res.ok) {
+      setOrders((prev) =>
+        prev.filter(
+          (order) => (order.product?._id || order.product) !== productId
+        )
+      );
+      toast.success("Order deleted!");
+    } else {
+      toast.error("Failed to delete order");
     }
-  };
+  } catch {
+    toast.error("Server error");
+  }
+};
 
   // Razorpay payment handler
-   const handleRazorpayPayment = async () => {
-    const token = localStorage.getItem("token");
-    setProcessing(true);
-    try {
-      // 1. Create order on backend
-      const res = await fetch("http://localhost:5000/api/payment/create-order", {
+  const handleRazorpayPayment = async () => {
+  const token = localStorage.getItem("token");
+  setProcessing(true);
+  try {
+    // 1. Create order on backend
+    const res = await fetch(
+      `${import.meta.env.VITE_APP_API_URL}/api/payment/create-order`,
+      {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ amount: total }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        toast.error(data.message || "Failed to create payment order");
-        setProcessing(false);
-        return;
       }
+    );
+    const data = await res.json();
+    if (!res.ok) {
+      toast.error(data.message || "Failed to create payment order");
+      setProcessing(false);
+      return;
+    }
 
-      // 2. Open Razorpay checkout
-      const options = {
-        key: import.meta.env.VITE_APP_RAZORPAY_KEY, // Replace with your Razorpay key_id
-        amount: data.amount,
-        currency: data.currency,
-        name: "Agri Marketplace",
-        description: "Order Payment",
-        order_id: data.id,
-        handler: async function (response) {
-          // 1. Store each order in backend and update status to "Successful"
-          for (const order of orders) {
-            // Create order
-            const res = await fetch("http://localhost:5000/api/orders", {
+    // 2. Open Razorpay checkout
+    const options = {
+      key: import.meta.env.VITE_APP_RAZORPAY_KEY,
+      amount: data.amount,
+      currency: data.currency,
+      name: "Agri Marketplace",
+      description: "Order Payment",
+      order_id: data.id,
+      handler: async function (response) {
+        // 1. Store each order in backend and update status to "Successful"
+        for (const order of orders) {
+          // Create order
+          const res = await fetch(
+            `${import.meta.env.VITE_APP_API_URL}/api/orders`,
+            {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -129,53 +140,63 @@ const MyOrders = () => {
                 quantity: order.quantity,
                 price: order.product?.price || order.price,
                 unit: order.product?.unit || order.unit,
-                farmer: order.product?.farmer || order.product?.user || order.farmer,
+                farmer:
+                  order.product?.farmer ||
+                  order.product?.user ||
+                  order.farmer,
               }),
-            });
-            const createdOrder = await res.json();
+            }
+          );
+          const createdOrder = await res.json();
 
-            // Update status to "Successful"
-            await fetch(`http://localhost:5000/api/orders/${createdOrder._id}`, {
+          // Update status to "Successful"
+          await fetch(
+            `${import.meta.env.VITE_APP_API_URL}/api/orders/${createdOrder._id}`,
+            {
               method: "PATCH",
               headers: {
                 "Content-Type": "application/json",
                 Authorization: `Bearer ${token}`,
               },
               body: JSON.stringify({ status: "Successful" }),
-            });
-          }
-
-          // 2. Mark as successful and show receipt
-          setOrders((prev) =>
-            prev.map((order) => ({
-              ...order,
-              status: "Successful",
-            }))
+            }
           );
-          setShowReceipt(true);
-          toast.success("Payment successful! Order placed.");
+        }
 
-          // 3. Optionally clear cart in backend after placing order
-          await fetch("http://localhost:5000/api/cart/clear", {
+        // 2. Mark as successful and show receipt
+        setOrders((prev) =>
+          prev.map((order) => ({
+            ...order,
+            status: "Successful",
+          }))
+        );
+        setShowReceipt(true);
+        toast.success("Payment successful! Order placed.");
+
+        // 3. Optionally clear cart in backend after placing order
+        await fetch(
+          `${import.meta.env.VITE_APP_API_URL}/api/cart/clear`,
+          {
             method: "DELETE",
             headers: {
               Authorization: `Bearer ${token}`,
             },
-          });
-        },
-        prefill: {},
-        theme: {
-          color: "#22c55e",
-        },
-      };
-      const rzp = new window.Razorpay(options);
-      rzp.open();
-    } catch (err) {
-      toast.error("Payment error",err);
-    } finally {
-      setProcessing(false);
-    }
-  };
+          }
+        );
+      },
+      prefill: {},
+      theme: {
+        color: "#22c55e",
+      },
+    };
+    const rzp = new window.Razorpay(options);
+    rzp.open();
+  } catch (err) {
+    toast.error("Payment error", err);
+  } finally {
+    setProcessing(false);
+  }
+};
 
   return (
     <div className="p-6 max-w-3xl mx-auto min-h-screen bg-green-50 font-nunito">

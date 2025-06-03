@@ -35,25 +35,28 @@ const Signup = () => {
       return;
     }
 
-    try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fullName, email, password, role }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setError("");
-        toast.success("User created successfully!");
-        setTimeout(() => navigate("/login"), 1200);
-      } else {
-        setError(data.message || "Signup failed");
-        toast.error(data.message || "Signup failed");
-      }
-    } catch (err) {
-      setError("Server error");
-      toast.error("Server error",err);
+  try {
+  const res = await fetch(
+    `${import.meta.env.VITE_APP_API_URL}/api/auth/signup`, // <-- use env variable
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fullName, email, password, role }),
     }
+  );
+  const data = await res.json();
+  if (res.ok) {
+    setError("");
+    toast.success("User created successfully!");
+    setTimeout(() => navigate("/login"), 1200);
+  } else {
+    setError(data.message || "Signup failed");
+    toast.error(data.message || "Signup failed");
+  }
+} catch (err) {
+  setError("Server error");
+  toast.error("Server error", err);
+}
   };
 
   return (

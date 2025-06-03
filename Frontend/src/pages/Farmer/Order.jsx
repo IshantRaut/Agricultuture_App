@@ -9,9 +9,12 @@ const Order = () => {
     const fetchOrders = async () => {
       try {
         const token = localStorage.getItem("token");
-        const res = await fetch("http://localhost:5000/api/orders", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
+        const res = await fetch(
+          `${import.meta.env.VITE_APP_API_URL}/api/orders`,
+          {
+            headers: { Authorization: `Bearer ${token}` }
+          }
+        );
         const data = await res.json();
         setOrders(data);
       } catch (err) {
@@ -25,10 +28,13 @@ const Order = () => {
   const handleDelete = async (orderId) => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`http://localhost:5000/api/orders/${orderId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` }
-      });
+      const res = await fetch(
+        `${import.meta.env.VITE_APP_API_URL}/api/orders/${orderId}`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
       if (res.ok) {
         setOrders((prev) => prev.filter((order) => order._id !== orderId));
         toast.success("Order deleted!");
